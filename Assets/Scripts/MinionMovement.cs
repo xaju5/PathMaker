@@ -5,40 +5,46 @@ public class MinionMovement : MonoBehaviour
 {
 
     [SerializeField] float speed;
-    [SerializeField] Transform pointATransform, pointBTransform;
-    Vector3 pointA, pointB;
+    Vector3 targetPoint;
 
     private Vector3 direction;
 
-    void Awake(){
-        pointA = pointATransform.position;
-        pointB = pointBTransform.position;
-        transform.position = pointA;
-    }
     void Start(){
-        direction = GetDirection(pointB);
+        targetPoint = transform.position;
+        direction = GetDirection();
     }
     void Update()
     {
-        MoveMinio();
-        UpdateDirection();
+        if(Input.GetMouseButtonDown(0)){
+            targetPoint = GetMouseWolrdPosition();
+            Debug.Log(targetPoint);
+        }
+
+        direction = GetDirection();
+        if(direction.magnitude < 0.01 ) return;
+        
+        MoveMinion();
     }
 
-    private void MoveMinio()
+    private void MoveMinion()
     {
         transform.position = transform.position + direction.normalized * speed;    
     }
 
-    private Vector3 GetDirection(Vector3 target)
+    private Vector3 GetDirection()
     {
-        return target - transform.position;
+        return targetPoint - transform.position;
     }
 
-    private void UpdateDirection(){
-        if((transform.position - pointA).magnitude <= speed )
-            direction = GetDirection(pointB);
+    private Vector3 GetMouseWolrdPosition(){
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Plane plane = new Plane(Vector3.up, new Vector3(0, 1, 0));
 
-        if((transform.position - pointB).magnitude <= speed )
-            direction = GetDirection(pointA);
+        float distance;
+        if (plane.Raycast(ray, out distance)) {
+            return ray.GetPoint(distance);
+        }
+
+        return Vector3.zero;
     }
 }
